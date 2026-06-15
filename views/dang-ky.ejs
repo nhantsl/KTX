@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký ở Ký túc xá</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <%- include('nav') %>
+    <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow">
+        <h1 class="text-2xl font-bold mb-4">Đăng ký ở Ký túc xá</h1>
+
+        <% if (error) { %>
+            <p class="text-red-600 mb-4"><%= error %></p>
+        <% } %>
+
+        <form method="POST" action="/dang-ky" class="space-y-4">
+            <div>
+                <label class="block mb-1">Họ tên</label>
+                <input type="text" name="full_name" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block mb-1">Số điện thoại</label>
+                <input type="tel" name="phone" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block mb-1">Giới tính</label>
+                <select name="gender" required class="w-full border rounded px-3 py-2">
+                    <option value="">-- Chọn --</option>
+                    <option value="male">Nam</option>
+                    <option value="female">Nữ</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+                Gửi yêu cầu
+            </button>
+        </form>
+    </div>
+</body>
+</html>

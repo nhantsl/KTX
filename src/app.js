@@ -3,8 +3,8 @@ const app = express();
 
 import session from 'express-session';
 
-import bookRoutes from '../routes/bookRoutes.js';
-import cartRoutes from '../routes/cartRoutes.js';
+import dormRouter from '../routes/dorm.routes.js';
+import adminRouter from '../routes/admin.routes.js';
 import morgan from 'morgan';
 
 
@@ -20,8 +20,8 @@ app.use(session({
 }));
 
 // routes
-app.use('/', bookRoutes);
-app.use('/cart', cartRoutes);
+app.use('/', dormRouter);
+app.use('/admin', adminRouter);
 
 // view engine
 app.set('view engine', 'ejs');

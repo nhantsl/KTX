@@ -1,11 +1,6 @@
-const requireLogin = (req, res, next) => {
+export default function requireAuth(req, res, next) {
     if (!req.session.user) {
-        return res.status(401).json({
-            message: 'Chưa đăng nhập'
-        });
+        return res.redirect('/admin/login');
     }
-
     next();
-};
-
-export default requireLogin;
+}

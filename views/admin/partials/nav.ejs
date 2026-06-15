@@ -1,0 +1,9 @@
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold"><%= title %></h1>
+    <div class="space-x-4 text-sm">
+        <a href="/admin/dashboard" class="<%= active === 'dashboard' ? 'text-blue-600 font-semibold' : 'text-gray-600' %>">Dashboard</a>
+        <a href="/admin/yeu-cau" class="<%= active === 'yeu-cau' ? 'text-blue-600 font-semibold' : 'text-gray-600' %>">Yêu cầu</a>
+        <a href="/admin/phong" class="<%= active === 'phong' ? 'text-blue-600 font-semibold' : 'text-gray-600' %>">Phòng</a>
+        <a href="/admin/logout" class="text-red-600">Đăng xuất</a>
+    </div>
+</div>
