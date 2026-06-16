@@ -1,32 +1,16 @@
 # 📚 Book Store Web App
 
 🌐 **Demo**  
-- 👉 Live: https://sach-kct5.onrender.com  
-- 👉 Source Code: https://github.com/nhantsl/Sach  
+- 👉 Live: https://ktx-s4hv.onrender.com/ 
+- 👉 Source Code: https://github.com/nhantsl/KTX  
 
 ---
 
 ## 📌 Giới thiệu
 
-Đây là ứng dụng web bán sách đơn giản được xây dựng bằng **Node.js + Express** theo mô hình backend phân tầng.
+Đây là web quản lý kí túc xá đơn giản được xây dựng bằng **Node.js + Express** theo mô hình backend phân tầng.
 
 Ứng dụng tập trung vào việc mô phỏng các chức năng cơ bản của một hệ thống e-commerce:
-
-- Hiển thị danh sách sản phẩm
-- Tìm kiếm & lọc
-- Quản lý giỏ hàng
-- CRUD sản phẩm (Admin)
-
----
-
-## 🧪 Tài khoản demo
-
-Dùng để test trong môi trường development:
-
-| Role  | Username | Password | Quyền |
-|------|--------|--------|------|
-| Admin | admin | 1 | Quản trị hệ thống |
-| User  | user  | pass | Người dùng |
 
 ---
 
@@ -61,14 +45,12 @@ project/
 ├── src/
 │   ├── app.js
 │   ├── controllers/
-│   ├── services/
 │   ├── middlewares/
 │
 ├── routers/
 ├── models/
 ├── views/
 ├── public/
-├── .env
 ├── server.js
 └── package.json
 ```
@@ -78,7 +60,7 @@ project/
 ## 🔄 Kiến trúc hệ thống
 
 ```
-Route → Controller → Service  → Database
+Route → Controller → Database
 ```
 
 ### Giải thích:
@@ -90,14 +72,11 @@ Route → Controller → Service  → Database
 
 ---
 
-## ✨ Tính năng chính
-
-- 📖 Hiển thị danh sách sách
-- 🔍 Tìm kiếm theo tên
-- 🏷️ Lọc theo danh mục
-- 📄 Phân trang
-- 🛒 Giỏ hàng (session-based)
-- ➕ Thêm sản phẩm
-- ❌ Xóa sản phẩm
-
----
+### Screenshot:
+![Screenshot](/public/images/add.png)
+![Screenshot](/public/images/admin.png)
+![Screenshot](/public/images/dashboard.png)
+![Screenshot](/public/images/detail.png)
+![Screenshot](/public/images/home.png)
+![Screenshot](/public/images/login.png)
+![Screenshot](/public/images/request.png)
