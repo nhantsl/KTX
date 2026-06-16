@@ -3,26 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <title>Quản lý yêu cầu</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/output.css">
 </head>
 <body class="bg-gray-50">
     <div class="max-w-6xl mx-auto mt-10 p-6">
-        <% if (typeof flash !== "undefined" && flash) { %>
-            <div class="bg-yellow-100 text-yellow-800 p-3 rounded mb-4">
-                <%= flash %>
-            </div>
-        <% } %>
-        <!-- <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">Quản lý yêu cầu</h1>
-            <div class="space-x-4">
-                <a href="/admin/dashboard" class="text-blue-600">Dashboard</a>
-                <a href="/admin/phong" class="text-blue-600">Phòng</a>
-                <a href="/admin/logout" class="text-red-600">Đăng xuất</a>
-            </div>
-        </div> -->
         <%- include('partials/nav', { title: 'Quản lý yêu cầu', active: 'yeu-cau' }) %>
+        <!-- MOBILE: card layout -->
+        <div class="md:hidden space-y-3">
+            <% registrations.forEach(r => { %>
+                <div class="bg-white rounded shadow p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="font-semibold"><%= r.full_name %></p>
+                        <% if (r.status === 'pending') { %>
+                            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">Đang chờ</span>
+                        <% } else if (r.status === 'approved') { %>
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Đã duyệt</span>
+                        <% } else { %>
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Đã từ chối</span>
+                        <% } %>
+                    </div>
+                    <p class="text-sm text-gray-600">SĐT: <%= r.phone %></p>
+                    <p class="text-sm text-gray-600">Giới tính: <%= r.gender === 'male' ? 'Nam' : 'Nữ' %></p>
+                    <p class="text-sm text-gray-600 mb-2">Ngày gửi: <%= new Date(r.created_at).toLocaleDateString('vi-VN') %></p>
+                    <% if (r.room) { %>
+                        <p class="text-sm text-gray-600 mb-2">Phòng: <%= r.building_name %> - <%= r.room %></p>
+                    <% } %>
 
-        <div class="bg-white rounded shadow overflow-x-auto">
+                    <% if (r.status === 'pending') { %>
+                        <form method="POST" action="/admin/yeu-cau/<%= r.id %>/duyet" class="flex gap-2 mt-3">
+                            <select name="room_id" required class="flex-1 border rounded px-2 py-2 text-sm">
+                                <option value="">-- Chọn phòng --</option>
+                                <% buildings.forEach(b => { %>
+                                    <% if (b.name === (r.gender === 'male' ? 'Nam' : 'Nữ')) { %>
+                                        <optgroup label="<%= b.name %>">
+                                            <% roomsByBuilding[b.id].forEach(rm => { %>
+                                                <% if (rm.current_count < rm.capacity) { %>
+                                                    <option value="<%= rm.id %>"><%= rm.room %> (<%= rm.current_count %>/<%= rm.capacity %>)</option>
+                                                <% } %>
+                                            <% }) %>
+                                        </optgroup>
+                                    <% } %>
+                                <% }) %>
+                            </select>
+                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded text-sm whitespace-nowrap">Duyệt</button>
+                        </form>
+                        <form method="POST" action="/admin/yeu-cau/<%= r.id %>/tu-choi" class="mt-2">
+                            <button type="submit" class="w-full bg-red-600 text-white py-2 rounded text-sm">Từ chối</button>
+                        </form>
+                    <% } %>
+                </div>
+            <% }) %>
+        </div>
+
+        <!-- DESKTOP: table layout -->
+        <div class="hidden md:block bg-white rounded shadow overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-gray-100">
                     <tr>
@@ -52,8 +87,8 @@
                                 <% } %>
                             </td>
                             <td class="p-3">
-                                <% if (r.room_number) { %>
-                                    <%= r.building_name %> - <%= r.room_number %>
+                                <% if (r.room) { %>
+                                    <%= r.building_name %> - <%= r.room %>
                                 <% } else { %>
                                     —
                                 <% } %>
@@ -69,7 +104,7 @@
                                                         <% roomsByBuilding[b.id].forEach(rm => { %>
                                                             <% if (rm.current_count < rm.capacity) { %>
                                                                 <option value="<%= rm.id %>">
-                                                                    <%= rm.room_number %> (<%= rm.current_count %>/<%= rm.capacity %>)
+                                                                    <%= rm.room %> (<%= rm.current_count %>/<%= rm.capacity %>)
                                                                 </option>
                                                             <% } %>
                                                         <% }) %>

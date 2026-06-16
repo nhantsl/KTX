@@ -6,6 +6,7 @@ import session from 'express-session';
 import dormRouter from '../routes/dorm.routes.js';
 import adminRouter from '../routes/admin.routes.js';
 import morgan from 'morgan';
+import flashMiddleware from '../src/middlewares/flash.middleware.js';
 
 
 // middleware
@@ -18,6 +19,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
+app.use(flashMiddleware);
 
 // routes
 app.use('/', dormRouter);

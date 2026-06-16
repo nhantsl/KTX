@@ -3,18 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Quản lý phòng</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/output.css">
 </head>
 <body class="bg-gray-50">
     <div class="max-w-5xl mx-auto mt-10 p-6">
-        <!-- <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">Quản lý phòng</h1>
-            <div class="space-x-4">
-                <a href="/admin/dashboard" class="text-blue-600">Dashboard</a>
-                <a href="/admin/yeu-cau" class="text-blue-600">Yêu cầu</a>
-                <a href="/admin/logout" class="text-red-600">Đăng xuất</a>
-            </div>
-        </div> -->
         <%- include('partials/nav', { title: 'Quản lý phòng', active: 'phong' }) %>
 
         <% 
@@ -30,7 +23,7 @@
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <% grouped[buildingName].forEach(r => { %>
                     <a href="/admin/phong/<%= r.id %>" class="block bg-white p-4 rounded shadow text-center hover:bg-gray-100">
-                        <p class="text-xl font-bold"><%= r.room_number %></p>
+                        <p class="text-xl font-bold"><%= r.room %></p>
                         <p class="text-sm <%= r.current_count >= r.capacity ? 'text-red-600' : 'text-green-600' %>">
                             <%= r.current_count %>/<%= r.capacity %>
                         </p>

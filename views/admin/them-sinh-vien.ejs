@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm sinh viên</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-5xl mx-auto mt-10 px-6">
+        <%- include('partials/nav', { title: 'Thêm sinh viên', active: 'them' }) %>
+    </div>
+    <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow">
+
+        <form method="POST" action="/admin/them-sinh-vien" class="space-y-4">
+            <div>
+                <label class="block mb-1">Họ tên</label>
+                <input type="text" name="full_name" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block mb-1">Số điện thoại</label>
+                <input type="tel" name="phone" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block mb-1">Giới tính</label>
+                <select name="gender" id="gender" required class="w-full border rounded px-3 py-2" onchange="filterRooms()">
+                    <option value="">-- Chọn --</option>
+                    <option value="male">Nam</option>
+                    <option value="female">Nữ</option>
+                </select>
+            </div>
+            <div>
+                <label class="block mb-1">Phòng</label>
+                <select name="room_id" id="room_id" required class="w-full border rounded px-3 py-2">
+                    <option value="">-- Chọn giới tính trước --</option>
+                    <% buildings.forEach(b => { %>
+                        <optgroup label="Tòa <%= b.name %>" data-gender="<%= b.name === 'Nam' ? 'male' : 'female' %>" class="room-group" style="display:none;">
+                            <% roomsByBuilding[b.id].forEach(rm => { %>
+                                <% if (rm.current_count < rm.capacity) { %>
+                                    <option value="<%= rm.id %>">
+                                        <%= rm.room %> (<%= rm.current_count %>/<%= rm.capacity %>)
+                                    </option>
+                                <% } %>
+                            <% }) %>
+                        </optgroup>
+                    <% }) %>
+                </select>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+                Thêm sinh viên
+            </button>
+        </form>
+    </div>
+
+    <script>
+        function filterRooms() {
+            const gender = document.getElementById('gender').value;
+            const groups = document.querySelectorAll('.room-group');
+            groups.forEach(g => {
+                g.style.display = g.dataset.gender === gender ? '' : 'none';
+            });
+            document.getElementById('room_id').value = '';
+        }
+    </script>
+</body>
+</html>

@@ -3,38 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <title>Đăng ký ở Ký túc xá</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/output.css">
 </head>
 <body class="bg-gray-50">
     <%- include('nav') %>
-    <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow">
+
+    <div class="max-w-md mx-auto mt-6 md:mt-10 p-4 md:p-6 md:mx-auto bg-white rounded-lg shadow">
         <h1 class="text-2xl font-bold mb-4">Đăng ký ở Ký túc xá</h1>
 
-        <% if (error) { %>
+        <% if (typeof error !== "undefined" && error) { %>
             <p class="text-red-600 mb-4"><%= error %></p>
         <% } %>
 
-        <form method="POST" action="/dang-ky" class="space-y-4">
+        <form method="POST" action="/dang-ky" class="space-y-4" onsubmit="return validateRoomSelected();">
             <div>
                 <label class="block mb-1">Họ tên</label>
-                <input type="text" name="full_name" required class="w-full border rounded px-3 py-2">
+                <input type="text" name="full_name" required class="w-full border rounded px-3 py-2.5 text-base">
             </div>
+
             <div>
                 <label class="block mb-1">Số điện thoại</label>
-                <input type="tel" name="phone" required class="w-full border rounded px-3 py-2">
+                <input type="tel" name="phone" required class="w-full border rounded px-3 py-2.5 text-base">
             </div>
+
             <div>
                 <label class="block mb-1">Giới tính</label>
-                <select name="gender" required class="w-full border rounded px-3 py-2">
+                <select id="gender" name="gender" required class="w-full border rounded px-3 py-2.5 text-base" onchange="filterRooms()">
                     <option value="">-- Chọn --</option>
                     <option value="male">Nam</option>
                     <option value="female">Nữ</option>
                 </select>
             </div>
+
+            <div>
+                <label class="block mb-1 font-medium">Phòng</label>
+                <div id="room-list" class="max-h-56 overflow-y-auto border rounded divide-y px-4">
+                    <p id="room-placeholder" class="p-3 text-sm text-gray-400">-- Chọn giới tính trước --</p>
+                    <% rooms.forEach(room => { %>
+                        <label class="room-item flex justify-between items-center p-3 cursor-pointer hover:bg-gray-50 text-sm"
+                               data-gender="<%= room.building_name === 'Nam' ? 'male' : 'female' %>"
+                               data-room-id="<%= room.id %>"
+                               style="display:none;">
+                            <span>Tòa <%= room.building_name %> · Phòng <%= room.room %></span>
+                            <span class="<%= room.current_count >= room.capacity ? 'text-red-500' : 'text-green-600' %>">
+                                <%= room.current_count %>/<%= room.capacity %>
+                            </span>
+                        </label>
+                    <% }) %>
+                </div>
+                <input type="hidden" name="room_id" id="room_id" required>
+            </div>
+
             <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
                 Gửi yêu cầu
             </button>
         </form>
     </div>
+
+    <script>
+        function filterRooms() {
+            const gender = document.getElementById('gender').value;
+            const items = document.querySelectorAll('.room-item');
+            const placeholder = document.getElementById('room-placeholder');
+
+            items.forEach(item => {
+                const match = item.dataset.gender === gender;
+                item.style.display = match ? 'flex' : 'none';
+                item.classList.remove('bg-blue-50', 'font-medium');
+            });
+
+            document.getElementById('room_id').value = '';
+            placeholder.style.display = gender ? 'none' : 'block';
+        }
+
+        document.querySelectorAll('.room-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.room-item').forEach(i => i.classList.remove('bg-blue-50', 'font-medium'));
+                item.classList.add('bg-blue-50', 'font-medium');
+                document.getElementById('room_id').value = item.dataset.roomId;
+            });
+        });
+
+        function validateRoomSelected() {
+            if (!document.getElementById('room_id').value) {
+                alert('Vui lòng chọn phòng');
+                return false;
+            }
+            return true;
+        }
+    </script>
 </body>
 </html>

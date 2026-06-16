@@ -1,12 +1,14 @@
+<% if (typeof flash !== "undefined" && flash) { %>
+    <div class="bg-green-100 text-green-800 p-3 rounded mb-4 mx-4 md:mx-0"><%= flash %></div>
+<% } %>
 <div class="bg-white shadow mb-6">
-    <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-        <a href="/" class="font-bold text-lg">Ký túc xá</a>
-        <div class="space-x-6 text-sm">
-            <a href="/" class="hover:text-blue-600">Trang chủ</a>
-            <a href="/gioi-thieu" class="hover:text-blue-600">Giới thiệu</a>
-            <a href="/noi-quy" class="hover:text-blue-600">Nội quy</a>
-            <a href="/dang-ky" class="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700">Đăng ký</a>
-            <a href="/admin/login" class="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700">Đăng nhập</a>
+    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+        <a href="/" class="font-bold text-base md:text-lg">Ký túc xá</a>
+        <div class="flex items-center gap-3 md:gap-6 text-xs md:text-sm">
+            <a href="/dang-ky" class="bg-blue-600 text-white px-3 
+            py-1.5 rounded hover:bg-blue-700 whitespace-nowrap">Đăng ký phòng</a>
+            <a href="/admin/login" class="bg-blue-600 text-white px-3 
+            py-1.5 rounded hover:bg-blue-700 whitespace-nowrap">Đăng nhập</a>
         </div>
     </div>
 </div>

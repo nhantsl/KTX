@@ -4,8 +4,9 @@ import {
     approveRegistration, rejectRegistration,
     getAllBuildings, getRoomsByBuilding,
     getAllRoomsWithBuilding, getRegistrationsByRoom,
-    getDashboardStats
+    getDashboardStats, deleteRegistration, addRegistrationByAdmin,
 } from '../../models/dormModel.js';
+import { redirectWithFlash } from '../middlewares/flash.middleware.js';
 
 // ============ AUTH ============
 
@@ -32,7 +33,7 @@ async function postLogin(req, res) {
 
 async function getLogout(req, res) {
     req.session.destroy(() => {
-        res.redirect('/admin/login');
+        res.redirect('/');
     });
 }
 
@@ -54,22 +55,16 @@ async function getYeuCau(req, res) {
     try {
         const registrations = await getAllRegistrations();
         const buildings = await getAllBuildings();
-
-        // Lấy phòng cho từng tòa để render select trong view
         const roomsByBuilding = {};
         for (const b of buildings) {
             roomsByBuilding[b.id] = await getRoomsByBuilding(b.id);
         }
-
-        const flash = req.session.flash;
-        delete req.session.flash;
 
         res.render('admin/yeu-cau', {
             registrations,
             buildings,
             roomsByBuilding,
             user: req.session.user,
-            flash
         });
     } catch (err) {
         console.error('Lỗi lấy yêu cầu:', err);
@@ -84,16 +79,16 @@ async function postDuyet(req, res) {
 
         if (!room_id) {
             req.session.flash = 'Vui lòng chọn phòng';
-            return res.redirect('/admin/yeu-cau');
+            return redirectWithFlash(req, res, '/admin/yeu-cau');
         }
 
         await approveRegistration(regId, room_id);
         req.session.flash = 'Duyệt thành công';
-        res.redirect('/admin/yeu-cau');
+        return redirectWithFlash(req, res, '/admin/yeu-cau');
     } catch (err) {
         console.error('Lỗi duyệt:', err);
         req.session.flash = err.message === 'Phòng đã đầy' ? 'Phòng đã đầy, vui lòng chọn phòng khác' : 'Có lỗi xảy ra';
-        res.redirect('/admin/yeu-cau');
+        return redirectWithFlash(req, res, '/admin/yeu-cau');
     }
 }
 
@@ -101,10 +96,12 @@ async function postTuChoi(req, res) {
     try {
         const regId = req.params.id;
         await rejectRegistration(regId);
-        res.redirect('/admin/yeu-cau');
+        req.session.flash = 'Đã từ chối yêu cầu';
+        redirectWithFlash(req, res, '/admin/yeu-cau');
     } catch (err) {
         console.error('Lỗi từ chối:', err);
-        res.redirect('/admin/yeu-cau');
+        req.session.flash = 'Có lỗi xảy ra';
+        redirectWithFlash(req, res, '/admin/yeu-cau');
     }
 }
 
@@ -124,10 +121,77 @@ async function getPhongDetail(req, res) {
     try {
         const roomId = req.params.id;
         const occupants = await getRegistrationsByRoom(roomId);
-        res.render('admin/phong-detail', { occupants, roomId, user: req.session.user });
+        res.render('admin/phong-detail', { occupants, roomId, user: req.session.user});
     } catch (err) {
         console.error('Lỗi lấy chi tiết phòng:', err);
         res.status(500).send('Lỗi server');
+    }
+}
+
+async function postXoa(req, res) {
+    try {
+        const regId = req.params.id;
+        const reg = await getRegistrationById(regId);
+        const roomId = reg?.room_id;
+
+        await deleteRegistration(regId);
+        req.session.flash = 'Đã xóa sinh viên';
+
+        if (roomId) {
+            return redirectWithFlash(req, res, `/admin/phong/${roomId}`);
+        }
+        redirectWithFlash(req, res, '/admin/yeu-cau');
+    } catch (err) {
+        console.error('Lỗi xóa:', err);
+        req.session.flash = 'Có lỗi xảy ra khi xóa';
+        redirectWithFlash(req, res, '/admin/phong');
+    }
+}
+
+async function getThemSinhVien(req, res) {
+    try {
+        const buildings = await getAllBuildings();
+        const roomsByBuilding = {};
+        for (const b of buildings) {
+            roomsByBuilding[b.id] = await getRoomsByBuilding(b.id);
+        }
+        res.render('admin/them-sinh-vien', { buildings, roomsByBuilding, error: null });
+    } catch (err) {
+        console.error('Lỗi tải form:', err);
+        res.status(500).send('Lỗi server');
+    }
+}
+
+async function postThemSinhVien(req, res) {
+    try {
+        const { full_name, phone, gender, room_id } = req.body;
+
+        if (!full_name || !phone || !gender || !room_id) {
+            const buildings = await getAllBuildings();
+            const roomsByBuilding = {};
+            for (const b of buildings) {
+                roomsByBuilding[b.id] = await getRoomsByBuilding(b.id);
+            }
+            return res.render('admin/them-sinh-vien', {
+                buildings, roomsByBuilding,
+                error: 'Vui lòng điền đầy đủ thông tin.'
+            });
+        }
+
+        await addRegistrationByAdmin(full_name.trim(), phone.trim(), gender, room_id);
+        req.session.flash = 'Đã thêm sinh viên thành công';
+        redirectWithFlash(req, res, `/admin/phong/${room_id}`);
+    } catch (err) {
+        console.error('Lỗi thêm sinh viên:', err);
+        const buildings = await getAllBuildings();
+        const roomsByBuilding = {};
+        for (const b of buildings) {
+            roomsByBuilding[b.id] = await getRoomsByBuilding(b.id);
+        }
+        res.render('admin/them-sinh-vien', {
+            buildings, roomsByBuilding,
+            error: err.message === 'Phòng đã đầy' ? 'Phòng đã đầy, vui lòng chọn phòng khác' : 'Có lỗi xảy ra'
+        });
     }
 }
 
@@ -135,5 +199,6 @@ export {
     getLogin, postLogin, getLogout,
     getDashboard,
     getYeuCau, postDuyet, postTuChoi,
-    getPhong, getPhongDetail
+    getPhong, getPhongDetail,
+    postXoa, getThemSinhVien, postThemSinhVien
 };

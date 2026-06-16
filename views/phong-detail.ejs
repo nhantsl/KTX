@@ -8,10 +8,9 @@
 </head>
 <body class="bg-gray-50">
     <div class="max-w-2xl mx-auto mt-10 p-6">
-        <%- include('partials/nav', { title: 'Quản lý phòng', active: 'phong' }) %>
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-semibold">Danh sách người ở phòng</h2>
-            <a href="/admin/phong" class="text-blue-600">← Quay lại</a>
+            <h1 class="text-2xl font-bold">Danh sách người ở phòng</h1>
+            <a href="/" class="text-blue-600">← Quay lại</a>
         </div>
 
         <div class="bg-white rounded shadow">
@@ -24,21 +23,17 @@
                             <th class="p-3 text-left">Họ tên</th>
                             <th class="p-3 text-left">SĐT</th>
                             <th class="p-3 text-left">Giới tính</th>
-                            <th class="p-3 text-left"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <% occupants.forEach(o => { %>
                             <tr class="border-t">
                                 <td class="p-3"><%= o.full_name %></td>
-                                <td class="p-3"><%= o.phone %></td>
-                                <td class="p-3"><%= o.gender === 'male' ? 'Nam' : 'Nữ' %></td>
                                 <td class="p-3">
-                                    <form method="POST" action="/admin/yeu-cau/<%= o.id %>/xoa"
-                                          onsubmit="return confirm('Xóa sinh viên này khỏi phòng?');">
-                                        <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-xs">Xóa</button>
-                                    </form>
+                                <% const phone = String(o.phone || ''); %>
+                                <%= '*'.repeat(Math.max(phone.length - 4, 0)) + phone.slice(-4) %>
                                 </td>
+                                <td class="p-3"><%= o.gender === 'male' ? 'Nam' : 'Nữ' %></td>
                             </tr>
                         <% }) %>
                     </tbody>

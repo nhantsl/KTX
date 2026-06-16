@@ -5,7 +5,7 @@ import { db } from './db.js';
 const getAllRegistrations = async () => {
     try {
         const [rows] = await db.query(
-            `SELECT r.*, rm.room_number, b.name AS building_name
+            `SELECT r.*, rm.room, b.name AS building_name
              FROM registrations r
              LEFT JOIN rooms rm ON r.room_id = rm.id
              LEFT JOIN buildings b ON rm.building_id = b.id
@@ -31,11 +31,14 @@ const getRegistrationById = async (id) => {
     }
 };
 
-const addRegistration = async (full_name, phone, gender) => {
+const addRegistration = async (full_name, phone, gender, roomId) => {
     try {
+        const [room] = await db.query('SELECT * FROM rooms WHERE id = ?', [roomId]);
+        if (!room[0]) throw new Error('Phòng không tồn tại');
+
         const [result] = await db.query(
-            'INSERT INTO registrations (full_name, phone, gender) VALUES (?, ?, ?)',
-            [full_name, phone, gender]
+            'INSERT INTO registrations (full_name, phone, gender, room_id) VALUES (?, ?, ?, ?)',
+            [full_name, phone, gender, roomId]
         );
         return result;
     } catch (err) {
@@ -105,30 +108,30 @@ const getAllBuildings = async () => {
     }
 };
 
-const getRoomsByBuilding = async (buildingId) => {
-    try {
-        const [rows] = await db.query(
-            'SELECT * FROM rooms WHERE building_id = ? ORDER BY room_number',
-            [buildingId]
-        );
-        return rows;
-    } catch (err) {
-        console.error('Lỗi lấy phòng:', err);
-        throw err;
-    }
-};
-
 const getAllRoomsWithBuilding = async () => {
     try {
         const [rows] = await db.query(
             `SELECT rm.*, b.name AS building_name
              FROM rooms rm
              JOIN buildings b ON rm.building_id = b.id
-             ORDER BY b.id, rm.room_number`
+             ORDER BY b.id, rm.room`
         );
         return rows;
     } catch (err) {
         console.error('Lỗi lấy danh sách phòng:', err);
+        throw err;
+    }
+};
+
+const getRoomsByBuilding = async (buildingId) => {
+    try {
+        const [rows] = await db.query(
+            'SELECT * FROM rooms WHERE building_id = ? ORDER BY room',
+            [buildingId]
+        );
+        return rows;
+    } catch (err) {
+        console.error('Lỗi lấy phòng:', err);
         throw err;
     }
 };
@@ -172,6 +175,75 @@ const getDashboardStats = async () => {
     }
 };
 
+const deleteRegistration = async (regId) => {
+    const conn = await db.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        const [regs] = await conn.query(
+            'SELECT * FROM registrations WHERE id = ? FOR UPDATE',
+            [regId]
+        );
+        const reg = regs[0];
+        if (!reg) throw new Error('Không tìm thấy đăng ký');
+
+        // Nếu đang ở phòng (approved), giảm current_count trước khi xóa
+        if (reg.room_id) {
+            await conn.query(
+                'UPDATE rooms SET current_count = current_count - 1 WHERE id = ? AND current_count > 0',
+                [reg.room_id]
+            );
+        }
+
+        await conn.query('DELETE FROM registrations WHERE id = ?', [regId]);
+
+        await conn.commit();
+        return { success: true };
+    } catch (err) {
+        await conn.rollback();
+        throw err;
+    } finally {
+        conn.release();
+    }
+};
+
+const addRegistrationByAdmin = async (full_name, phone, gender, roomId) => {
+    const conn = await db.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        const [rooms] = await conn.query(
+            'SELECT * FROM rooms WHERE id = ? FOR UPDATE',
+            [roomId]
+        );
+        const room = rooms[0];
+
+        if (!room) throw new Error('Phòng không tồn tại');
+        if (room.current_count >= room.capacity) {
+            throw new Error('Phòng đã đầy');
+        }
+
+        const [result] = await conn.query(
+            `INSERT INTO registrations (full_name, phone, gender, status, room_id)
+             VALUES (?, ?, ?, 'approved', ?)`,
+            [full_name, phone, gender, roomId]
+        );
+
+        await conn.query(
+            'UPDATE rooms SET current_count = current_count + 1 WHERE id = ?',
+            [roomId]
+        );
+
+        await conn.commit();
+        return result;
+    } catch (err) {
+        await conn.rollback();
+        throw err;
+    } finally {
+        conn.release();
+    }
+};
+
 export {
     getAllRegistrations,
     getRegistrationById,
@@ -182,5 +254,7 @@ export {
     getRoomsByBuilding,
     getAllRoomsWithBuilding,
     getRegistrationsByRoom,
-    getDashboardStats
+    getDashboardStats,
+    deleteRegistration,
+    addRegistrationByAdmin,
 };
